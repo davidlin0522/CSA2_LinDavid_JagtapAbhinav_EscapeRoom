@@ -67,9 +67,23 @@ public class EscapeRoom
     {
       /* TODO: get all the commands working */
 	  /* Your code here */
+      Scanner scanner = new Scanner(System.in); 
+      String next_command = scanner.nextLine();
+
+      if (next_command.equalsIgnoreCase("quit")) {
+        play = false;
+      } else if (next_command.equalsIgnoreCase("right") || next_command.equalsIgnoreCase("r")) {
+        px += m;
+      } else if (next_command.equalsIgnoreCase("left") || next_command.equalsIgnoreCase("l")) {
+        px -= m;
+      } else if (next_command.equalsIgnoreCase("up") || next_command.equalsIgnoreCase("u")) {
+        py += m;
+      }else if (next_command.equalsIgnoreCase("down") || next_command.equalsIgnoreCase("d")) {
+        py -= m;
+      }
+
+      game.movePlayer(px, py);
     
-      
-    }
 
   
 
@@ -78,6 +92,6 @@ public class EscapeRoom
     System.out.println("score=" + score);
     System.out.println("steps=" + game.getSteps());
   }
-}
+  }}
 
         
