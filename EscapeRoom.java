@@ -81,9 +81,12 @@ public class EscapeRoom
         score += game.movePlayer(0, m);
       }else if (next_command.equalsIgnoreCase("pickup") || next_command.equalsIgnoreCase("p")) {
        score +=  game.pickupPrize();
+      }else if (next_command.equalsIgnoreCase("replay")) {
+        //create a new game instance
+       game.replay();
       }
-      System.out.println("score=" + score);
-      System.out.println("steps=" + game.getSteps());
+      System.out.println("current score:" + score);
+      System.out.println("current steps:" + game.getSteps());
     }
   score += game.endGame();
 
