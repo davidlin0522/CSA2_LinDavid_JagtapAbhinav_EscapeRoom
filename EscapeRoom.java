@@ -72,21 +72,23 @@ public class EscapeRoom
       if (next_command.equalsIgnoreCase("quit") || next_command.equalsIgnoreCase("q")) {
         play = false;
       } else if (next_command.equalsIgnoreCase("right") || next_command.equalsIgnoreCase("r")) {
-        game.movePlayer(m, 0);
+        score += game.movePlayer(m, 0);
       } else if (next_command.equalsIgnoreCase("left") || next_command.equalsIgnoreCase("l")) {
-        game.movePlayer(-m, py);
+        score += game.movePlayer(-m, py);
       } else if (next_command.equalsIgnoreCase("up") || next_command.equalsIgnoreCase("u")) {
-        game.movePlayer(0, -m);
+        score += game.movePlayer(0, -m);
       }else if (next_command.equalsIgnoreCase("down") || next_command.equalsIgnoreCase("d")) {
-        game.movePlayer(0, m);
+        score += game.movePlayer(0, m);
       }else if (next_command.equalsIgnoreCase("pickup") || next_command.equalsIgnoreCase("p")) {
-        game.pickupPrize();
+        score += game.pickupPrize();
       }
+      System.out.println("score=" + score);
+      System.out.println("steps=" + game.getSteps());
     }
   score += game.endGame();
-
   System.out.println("score=" + score);
   System.out.println("steps=" + game.getSteps());
+  
   }}
 
         
