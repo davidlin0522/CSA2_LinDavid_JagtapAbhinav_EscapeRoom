@@ -73,6 +73,8 @@ public class EscapeRoom
         System.out.println("Invalid input. Please try again");
         continue;
       }
+    }
+  score += game.endGame();
 
       // px and py hold how far to move THIS turn, so reset them every turn.
       // movePlayer() adds these amounts to where the player already is.
