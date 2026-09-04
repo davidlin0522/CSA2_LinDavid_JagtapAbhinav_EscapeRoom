@@ -49,49 +49,123 @@ public class EscapeRoom
     game.createBoard();
 
     // size of move
-    int m = 60; 
+    int m = 60;
     // individual player moves
     int px = 0;
-    int py = 0; 
-    
+    int py = 0;
+
     int score = 0;
 
     Scanner in = new Scanner(System.in);
     String[] validCommands = { "right", "left", "up", "down", "r", "l", "u", "d",
     "jump", "jr", "jumpleft", "jl", "jumpup", "ju", "jumpdown", "jd",
     "pickup", "p", "quit", "q", "replay", "help", "?"};
-  
+
     // set up game
     boolean play = true;
     while (play)
     {
-      /* TODO: get all the commands working */
-	  /* Your code here */
-      Scanner scanner = new Scanner(System.in); 
-      String next_command = scanner.nextLine();
+      System.out.print("Enter a command (help for a list)\n>");
+      String command = in.nextLine().trim().toLowerCase();
 
-      if (next_command.equalsIgnoreCase("quit")) {
-        play = false;
-      } else if (next_command.equalsIgnoreCase("right") || next_command.equalsIgnoreCase("r")) {
-        px += m;
-      } else if (next_command.equalsIgnoreCase("left") || next_command.equalsIgnoreCase("l")) {
-        px -= m;
-      } else if (next_command.equalsIgnoreCase("up") || next_command.equalsIgnoreCase("u")) {
-        py += m;
-      }else if (next_command.equalsIgnoreCase("down") || next_command.equalsIgnoreCase("d")) {
-        py -= m;
+      if (!isValidCommand(command, validCommands))
+      {
+        System.out.println("Invalid input. Please try again");
+        continue;
       }
 
-      game.movePlayer(px, py);
-    
+      // px and py hold how far to move THIS turn, so reset them every turn.
+      // movePlayer() adds these amounts to where the player already is.
+      px = 0;
+      py = 0;
 
-  
+      // note: y grows going DOWN the screen, so up is negative
+      if (command.equals("right") || command.equals("r"))
+      {
+        px = m;
+      }
+      else if (command.equals("left") || command.equals("l"))
+      {
+        px = -m;
+      }
+      else if (command.equals("up") || command.equals("u"))
+      {
+        py = -m;
+      }
+      else if (command.equals("down") || command.equals("d"))
+      {
+        py = m;
+      }
+      // a jump clears one space, so it moves two spaces at once
+      else if (command.equals("jump") || command.equals("jr"))
+      {
+        px = 2 * m;
+      }
+      else if (command.equals("jumpleft") || command.equals("jl"))
+      {
+        px = -2 * m;
+      }
+      else if (command.equals("jumpup") || command.equals("ju"))
+      {
+        py = -2 * m;
+      }
+      else if (command.equals("jumpdown") || command.equals("jd"))
+      {
+        py = 2 * m;
+      }
+      else if (command.equals("help") || command.equals("?"))
+      {
+        printHelp();
+      }
+      else if (command.equals("quit") || command.equals("q"))
+      {
+        play = false;
+      }
 
+      // movePlayer returns a penalty for hitting a wall or going off the grid
+      if (px != 0 || py != 0)
+      {
+        score += game.movePlayer(px, py);
+      }
+    }
+
+    // the game is over: check if the player reached the far right wall
     score += game.endGame();
 
     System.out.println("score=" + score);
     System.out.println("steps=" + game.getSteps());
   }
-  }}
+
+  /**
+   * Check the player's typed command against the list of commands the game accepts.
+   *
+   * @param command the command the player typed, already lowercased
+   * @param validCommands every command the game accepts
+   * @return true if the command is in the list, false otherwise
+   */
+  public static boolean isValidCommand(String command, String[] validCommands)
+  {
+    for (String valid : validCommands)
+    {
+      if (command.equals(valid))
+      {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Print every command the player is allowed to type.
+   */
+  public static void printHelp()
+  {
+    System.out.println("Commands:");
+    System.out.println("  right (r), left (l), up (u), down (d)  move one space");
+    System.out.println("  jump (jr), jumpleft (jl), jumpup (ju), jumpdown (jd)  jump over one space");
+    System.out.println("  help (?)  show this list");
+    System.out.println("  quit (q)  end the game");
+  }
+}
 
         
