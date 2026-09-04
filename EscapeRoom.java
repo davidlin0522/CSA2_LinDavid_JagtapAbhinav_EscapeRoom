@@ -69,10 +69,9 @@ public class EscapeRoom
 	  /* Your code here */
       Scanner scanner = new Scanner(System.in); 
       String next_command = scanner.nextLine();
-      System.out.println(next_command);
-      // if (next_command.equalsIgnoreCase("quit")) {
-      //   // play = false;
-      if (next_command.equalsIgnoreCase("right") || next_command.equalsIgnoreCase("r")) {
+      if (next_command.equalsIgnoreCase("quit") || next_command.equalsIgnoreCase("q")) {
+        play = false;
+      } else if (next_command.equalsIgnoreCase("right") || next_command.equalsIgnoreCase("r")) {
         game.movePlayer(m, 0);
       } else if (next_command.equalsIgnoreCase("left") || next_command.equalsIgnoreCase("l")) {
         game.movePlayer(-m, py);
@@ -80,13 +79,14 @@ public class EscapeRoom
         game.movePlayer(0, -m);
       }else if (next_command.equalsIgnoreCase("down") || next_command.equalsIgnoreCase("d")) {
         game.movePlayer(0, m);
+      }else if (next_command.equalsIgnoreCase("pickup") || next_command.equalsIgnoreCase("p")) {
+        game.pickupPrize();
       }
+    }
+  score += game.endGame();
 
-    // score += game.endGame();
-
-    System.out.println("score=" + score);
-    System.out.println("steps=" + game.getSteps());
-  }
+  System.out.println("score=" + score);
+  System.out.println("steps=" + game.getSteps());
   }}
 
         
