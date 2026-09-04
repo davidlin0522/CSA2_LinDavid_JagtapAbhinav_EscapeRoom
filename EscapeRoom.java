@@ -49,18 +49,18 @@ public class EscapeRoom
     game.createBoard();
 
     // size of move
-    int m = 60; 
+    int m = 60;
     // individual player moves
     int px = 0;
-    int py = 0; 
-    
+    int py = 0;
+
     int score = 0;
 
     Scanner in = new Scanner(System.in);
     String[] validCommands = { "right", "left", "up", "down", "r", "l", "u", "d",
     "jump", "jr", "jumpleft", "jl", "jumpup", "ju", "jumpdown", "jd",
     "pickup", "p", "quit", "q", "replay", "help", "?"};
-  
+
     // set up game
     boolean play = true;
     while (play)
@@ -72,23 +72,23 @@ public class EscapeRoom
       if (next_command.equalsIgnoreCase("quit") || next_command.equalsIgnoreCase("q")) {
         play = false;
       } else if (next_command.equalsIgnoreCase("right") || next_command.equalsIgnoreCase("r")) {
-        score += game.movePlayer(m, 0);
+        game.movePlayer(m, 0);
       } else if (next_command.equalsIgnoreCase("left") || next_command.equalsIgnoreCase("l")) {
-        score += game.movePlayer(-m, py);
+        game.movePlayer(-m, py);
       } else if (next_command.equalsIgnoreCase("up") || next_command.equalsIgnoreCase("u")) {
-        score += game.movePlayer(0, -m);
+        game.movePlayer(0, -m);
       }else if (next_command.equalsIgnoreCase("down") || next_command.equalsIgnoreCase("d")) {
-        score += game.movePlayer(0, m);
+        game.movePlayer(0, m);
       }else if (next_command.equalsIgnoreCase("pickup") || next_command.equalsIgnoreCase("p")) {
-        score += game.pickupPrize();
+        game.pickupPrize();
       }
       System.out.println("score=" + score);
       System.out.println("steps=" + game.getSteps());
     }
   score += game.endGame();
+
   System.out.println("score=" + score);
   System.out.println("steps=" + game.getSteps());
-  
   }}
 
         
