@@ -44,55 +44,28 @@ public class EscapeRoom
     System.out.println("Welcome to EscapeRoom!");
     System.out.println("Get to the other side of the room, avoiding walls and invisible traps,");
     System.out.println("pick up all the prizes.\n");
-    String helpMessage = """
-    --------------------------------------------------------------------- \n
-    Welcome to the escape room.\n
-    Input \'right\' or \'r\', \'left\' or \'l\', \'up\' or \'u\', \'down\' or \'d\'
-    to move right, left, up or down respectively \n 
-    Input \'replay\' to reset your player position \n
-    Input \'jump\' or \'jr\' to jump to the right \n
-    Input \'jumpleft\' or \'jl\' to jump to the left\n
-    Input \'jumpup\' or \'ju\' to jump upwards \n
-    Input \'jumpdown\' or \'jd\' to jump downwards \n
-    Input \'pickup\' or \'p\' to pickup items \n
-    Input \'quit\' or \'q\' to quit the game \n
-    Input \'help\' or \'?\' to print this message again! \n
-    --------------------------------------------------------------------- \n
-     """;
-
-    //Create Game
+    
     GameGUI game = new GameGUI();
     game.createBoard();
 
     // size of move
     int m = 60;
-    // individual player moves
-    int px = 0;
-    int py = 0;
-
     int score = 0;
-    int invalidVal = 5; // penalty for typing an unrecognized command
-    int noTrapVal = 5; // penalty for checking and finding nothing nearby
+    int[][] adjacentTiles = { {m, 0}, {-m, 0}, {0, -m}, {0, m} };  // Gets ajacent tiles
 
     Scanner in = new Scanner(System.in);
-    String[] validCommands = { "right", "left", "up", "down", "r", "l", "u", "d",
-    "jump", "jr", "jumpleft", "jl", "jumpup", "ju", "jumpdown", "jd",
-    "pickup", "p", "trap", "t", "check", "c", "quit", "q", "replay", "help", "?"};
-
+  
     // set up game
     boolean play = true;
     while (play)
-    { 
-      /* TODO: get all the commands working */
-	  /* Your code here */
-      Scanner scanner = new Scanner(System.in); 
-      String next_command = scanner.nextLine();
-      if (next_command.equals("quit") || next_command.equals("q")) {
+    {
+      String next_command = in.nextLine();
+      if (next_command.equalsIgnoreCase("quit") || next_command.equalsIgnoreCase("q")) {
         play = false;
       } else if (next_command.equalsIgnoreCase("right") || next_command.equalsIgnoreCase("r")) {
         score += game.movePlayer(m, 0);
       } else if (next_command.equalsIgnoreCase("left") || next_command.equalsIgnoreCase("l")) {
-        score += game.movePlayer(-m, py);
+        score += game.movePlayer(-m, 0);
       } else if (next_command.equalsIgnoreCase("up") || next_command.equalsIgnoreCase("u")) {
         score += game.movePlayer(0, -m);
       }else if (next_command.equalsIgnoreCase("down") || next_command.equalsIgnoreCase("d")) {
@@ -103,170 +76,39 @@ public class EscapeRoom
         //create a new game instance
        game.replay();
 
-      }else if (next_command.equals("help") || next_command.equals("?")) {
-        //prints out helpMessage
-        System.out.println(helpMessage);
-      }
-      else{
-        score -= 3;
-      }
+      } else if (next_command.equals("check") || next_command.equals("c")) {
+        boolean foundTrap = false;
+        //sets foundTrap variable to false, initially
 
+        for (int[] tile : adjacentTiles) { //for loop; checks every tile next to plyer
+          if (game.isTrap(tile[0], tile[1])) { //Checks every tile around the player
+            foundTrap = true;  // If there is a trap there, returns true
+            System.out.println("Trap detected next to you");
+          } else {
+            System.out.println( "No traps detected next to you.");
+          }
+        }
+
+      } else if (next_command.equalsIgnoreCase("spring") || next_command.equalsIgnoreCase("s")) {
+        boolean sprungTrap = false;
+
+        for (int[] tile : adjacentTiles) {
+          if (game.isTrap(tile[0], tile[1])) { //checks all tiles around the player
+            score += game.springTrap(tile[0], tile[1]);
+            sprungTrap = true;
+          }
+        }
+
+        if (!sprungTrap) {
+          System.out.println("No traps next to you. Penalty applied.");
+          score -= 5;
+        }
+      }
       System.out.println("current score:" + score);
       System.out.println("current steps:" + game.getSteps());
     }
   score += game.endGame();
 
-      System.out.print("Enter a command (help for a list)\n>");
-      String line = in.nextLine().trim().toLowerCase();
-      // "trap" can take a second word for direction, e.g. "trap d" checks the space below
-      String[] words = line.split("\\s+");
-      String command = words[0];
-      String dir = words.length > 1 ? words[1] : "";
-
-      if (!getValidInput(command, validCommands))
-      {
-        System.out.println("Invalid input. Please try again");
-        score -= invalidVal;
-        System.out.println("score=" + score + " steps=" + game.getSteps());
-        continue;
-      }
-
-      // px/py reset each turn since movePlayer() moves relative to where the player already is
-      px = 0;
-      py = 0;
-
-      // y grows going DOWN the screen, so up is negative
-      if (command.equals("right") || command.equals("r"))
-      {
-        px = m;
-      }
-      else if (command.equals("left") || command.equals("l"))
-      {
-        px = -m;
-      }
-      else if (command.equals("up") || command.equals("u"))
-      {
-        py = -m;
-      }
-      else if (command.equals("down") || command.equals("d"))
-      {
-        py = m;
-      }
-      // a jump clears one space, so it moves two spaces at once
-      else if (command.equals("jump") || command.equals("jr"))
-      {
-        px = 2 * m;
-      }
-      else if (command.equals("jumpleft") || command.equals("jl"))
-      {
-        px = -2 * m;
-      }
-      else if (command.equals("jumpup") || command.equals("ju"))
-      {
-        py = -2 * m;
-      }
-      else if (command.equals("jumpdown") || command.equals("jd"))
-      {
-        py = 2 * m;
-      }
-      // pick up the prize on the space the player is standing on
-      else if (command.equals("pickup") || command.equals("p"))
-      {
-        score += game.pickupPrize();
-      }
-      // spring a trap: with no direction, checks your own space; with a direction (trap d, trap u, ...)
-      // it checks the adjacent space instead, so you can clear a trap before ever stepping on it
-      else if (command.equals("trap") || command.equals("t"))
-      {
-        int tx = 0;
-        int ty = 0;
-        if (dir.equals("right") || dir.equals("r"))
-        {
-          tx = m;
-        }
-        else if (dir.equals("left") || dir.equals("l"))
-        {
-          tx = -m;
-        }
-        else if (dir.equals("up") || dir.equals("u"))
-        {
-          ty = -m;
-        }
-        else if (dir.equals("down") || dir.equals("d"))
-        {
-          ty = m;
-        }
-        score += game.springTrap(tx, ty);
-      }
-      // look at all four adjacent spaces for traps; a wasted check with nothing nearby costs points
-      else if (command.equals("check") || command.equals("c"))
-      {
-        boolean found = false;
-        if (game.isTrap(m, 0))
-        {
-          System.out.println("trap to your right");
-          found = true;
-        }
-        if (game.isTrap(-m, 0))
-        {
-          System.out.println("trap to your left");
-          found = true;
-        }
-        if (game.isTrap(0, -m))
-        {
-          System.out.println("trap above you");
-          found = true;
-        }
-        if (game.isTrap(0, m))
-        {
-          System.out.println("trap below you");
-          found = true;
-        }
-        if (!found)
-        {
-          System.out.println("no traps in any direction");
-          score -= noTrapVal;
-        }
-      }
-      // reset the board; replay() itself returns the win/loss score for the run just finished
-      else if (command.equals("replay"))
-      {
-        System.out.println("steps=" + game.getSteps());
-        score += game.replay();
-      }
-      else if (command.equals("help") || command.equals("?"))
-      {
-        System.out.println(helpMessage);
-      }
-      else if (command.equals("quit") || command.equals("q"))
-      {
-        play = false;
-      }
-
-      // only movement/jump commands set px or py, so this skips movePlayer for everything else
-      if (px != 0 || py != 0)
-      {
-        // movePlayer returns a penalty for hitting a wall or going off the grid, -1 for a normal move
-        int moveResult = game.movePlayer(px, py);
-        score += moveResult;
-
-        // walking onto an unsprung trap springs it automatically, but costs points since you didn't check first
-        if (moveResult == -1 && game.isTrap(0, 0))
-        {
-          System.out.println("YOU STEPPED ON A TRAP!");
-          score -= game.springTrap(0, 0);
-        }
-      }
-
-      // show the player where they stand after every command
-      System.out.println("score=" + score + " steps=" + game.getSteps());
-    }
-
-    // the game is over: check if the player reached the far right wall
-  score += game.endGame();
-
   System.out.println("score=" + score);
   System.out.println("steps=" + game.getSteps());
   }}
-
-        
