@@ -45,13 +45,22 @@ public class EscapeRoom
     System.out.println("Get to the other side of the room, avoiding walls and invisible traps,");
     System.out.println("pick up all the prizes.\n");
     String helpMessage = """
-    {
-    Welcome to the escape room.\n Input \'right\' or \'r\', \'left\' or \'l\', \'up\' or \'u\', \'down\' or \'d\'
+    --------------------------------------------------------------------- \n
+    Welcome to the escape room.\n
+    Input \'right\' or \'r\', \'left\' or \'l\', \'up\' or \'u\', \'down\' or \'d\'
     to move right, left, up or down respectively \n 
     Input \'replay\' to reset your player position \n
-    Input \'help\' or \'?\' to print this message again! 
-    }
+    Input \'jump\' or \'jr\' to jump to the right \n
+    Input \'jumpleft\' or \'jl\' to jump to the left\n
+    Input \'jumpup\' or \'ju\' to jump upwards \n
+    Input \'jumpdown\' or \'jd\' to jump downwards \n
+    Input \'pickup\' or \'p\' to pickup items \n
+    Input \'quit\' or \'q\' to quit the game \n
+    Input \'help\' or \'?\' to print this message again! \n
+    --------------------------------------------------------------------- \n
      """;
+
+
     GameGUI game = new GameGUI();
     game.createBoard();
 
@@ -71,12 +80,12 @@ public class EscapeRoom
     // set up game
     boolean play = true;
     while (play)
-    {
+    { 
       /* TODO: get all the commands working */
 	  /* Your code here */
       Scanner scanner = new Scanner(System.in); 
       String next_command = scanner.nextLine();
-      if (next_command.equalsIgnoreCase("quit") || next_command.equalsIgnoreCase("q")) {
+      if (next_command.equals("quit") || next_command.equals("q")) {
         play = false;
       } else if (next_command.equalsIgnoreCase("right") || next_command.equalsIgnoreCase("r")) {
         score += game.movePlayer(m, 0);
@@ -91,11 +100,14 @@ public class EscapeRoom
       }else if (next_command.equalsIgnoreCase("replay")) {
         //create a new game instance
        game.replay();
-      }else if (next_command.equalsIgnoreCase("help") || next_command.equalsIgnoreCase("?")) {
+      }else if (next_command.equals("help") || next_command.equals("?")) {
         //create a new game instance
         System.out.println(helpMessage);
-       game.replay();
       }
+      else{
+        score -= 3;
+      }
+
       System.out.println("current score:" + score);
       System.out.println("current steps:" + game.getSteps());
     }
