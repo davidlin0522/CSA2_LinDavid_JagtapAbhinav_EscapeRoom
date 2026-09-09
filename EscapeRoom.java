@@ -44,7 +44,14 @@ public class EscapeRoom
     System.out.println("Welcome to EscapeRoom!");
     System.out.println("Get to the other side of the room, avoiding walls and invisible traps,");
     System.out.println("pick up all the prizes.\n");
-    
+    String helpMessage = """
+    {
+    Welcome to the escape room.\n Input \'right\' or \'r\', \'left\' or \'l\', \'up\' or \'u\', \'down\' or \'d\'
+    to move right, left, up or down respectively \n 
+    Input \'replay\' to reset your player position \n
+    Input \'help\' or \'?\' to print this message again! 
+    }
+     """;
     GameGUI game = new GameGUI();
     game.createBoard();
 
@@ -83,6 +90,10 @@ public class EscapeRoom
        score +=  game.pickupPrize();
       }else if (next_command.equalsIgnoreCase("replay")) {
         //create a new game instance
+       game.replay();
+      }else if (next_command.equalsIgnoreCase("help") || next_command.equalsIgnoreCase("?")) {
+        //create a new game instance
+        System.out.println(helpMessage);
        game.replay();
       }
       System.out.println("current score:" + score);
