@@ -187,7 +187,7 @@ public class GameGUI extends JComponent
       x += incrx;
       y += incry;
       repaint();   
-      return 0;   
+      return -1;   
   }
 
   /**
