@@ -55,11 +55,12 @@ public class EscapeRoom
     int py = 0;
 
     int score = 0;
+    int invalidVal = 5; // penalty for typing an unrecognized command
 
     Scanner in = new Scanner(System.in);
     String[] validCommands = { "right", "left", "up", "down", "r", "l", "u", "d",
     "jump", "jr", "jumpleft", "jl", "jumpup", "ju", "jumpdown", "jd",
-    "pickup", "p", "quit", "q", "replay", "help", "?"};
+    "pickup", "p", "trap", "t", "quit", "q", "replay", "help", "?"};
 
     // set up game
     boolean play = true;
@@ -71,17 +72,15 @@ public class EscapeRoom
       if (!isValidCommand(command, validCommands))
       {
         System.out.println("Invalid input. Please try again");
+        score -= invalidVal;
         continue;
       }
-    }
-  score += game.endGame();
 
-      // px and py hold how far to move THIS turn, so reset them every turn.
-      // movePlayer() adds these amounts to where the player already is.
+      // px/py reset each turn since movePlayer() moves relative to where the player already is
       px = 0;
       py = 0;
 
-      // note: y grows going DOWN the screen, so up is negative
+      // y grows going DOWN the screen, so up is negative
       if (command.equals("right") || command.equals("r"))
       {
         px = m;
@@ -115,6 +114,22 @@ public class EscapeRoom
       {
         py = 2 * m;
       }
+      // pick up the prize on the space the player is standing on
+      else if (command.equals("pickup") || command.equals("p"))
+      {
+        score += game.pickupPrize();
+      }
+      // spring the trap on the space the player is standing on
+      else if (command.equals("trap") || command.equals("t"))
+      {
+        score += game.springTrap(0, 0);
+      }
+      // reset the board; replay() itself returns the win/loss score for the run just finished
+      else if (command.equals("replay"))
+      {
+        System.out.println("steps=" + game.getSteps());
+        score += game.replay();
+      }
       else if (command.equals("help") || command.equals("?"))
       {
         printHelp();
@@ -124,6 +139,7 @@ public class EscapeRoom
         play = false;
       }
 
+      // only movement/jump commands set px or py, so this skips movePlayer for everything else
       // movePlayer returns a penalty for hitting a wall or going off the grid
       if (px != 0 || py != 0)
       {
@@ -138,13 +154,7 @@ public class EscapeRoom
     System.out.println("steps=" + game.getSteps());
   }
 
-  /**
-   * Check the player's typed command against the list of commands the game accepts.
-   *
-   * @param command the command the player typed, already lowercased
-   * @param validCommands every command the game accepts
-   * @return true if the command is in the list, false otherwise
-   */
+  // returns true if command is one of the strings in validCommands
   public static boolean isValidCommand(String command, String[] validCommands)
   {
     for (String valid : validCommands)
@@ -157,14 +167,15 @@ public class EscapeRoom
     return false;
   }
 
-  /**
-   * Print every command the player is allowed to type.
-   */
+  // prints the list of valid commands
   public static void printHelp()
   {
     System.out.println("Commands:");
     System.out.println("  right (r), left (l), up (u), down (d)  move one space");
     System.out.println("  jump (jr), jumpleft (jl), jumpup (ju), jumpdown (jd)  jump over one space");
+    System.out.println("  pickup (p)  pick up a prize on your space");
+    System.out.println("  trap (t)  spring a trap on your space");
+    System.out.println("  replay  reset the board and play again");
     System.out.println("  help (?)  show this list");
     System.out.println("  quit (q)  end the game");
   }
