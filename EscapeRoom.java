@@ -56,23 +56,29 @@ public class EscapeRoom
 
     int score = 0;
     int invalidVal = 5; // penalty for typing an unrecognized command
+    int noTrapVal = 5; // penalty for checking and finding nothing nearby
 
     Scanner in = new Scanner(System.in);
     String[] validCommands = { "right", "left", "up", "down", "r", "l", "u", "d",
     "jump", "jr", "jumpleft", "jl", "jumpup", "ju", "jumpdown", "jd",
-    "pickup", "p", "trap", "t", "quit", "q", "replay", "help", "?"};
+    "pickup", "p", "trap", "t", "check", "c", "quit", "q", "replay", "help", "?"};
 
     // set up game
     boolean play = true;
     while (play)
     {
       System.out.print("Enter a command (help for a list)\n>");
-      String command = in.nextLine().trim().toLowerCase();
+      String line = in.nextLine().trim().toLowerCase();
+      // "trap" can take a second word for direction, e.g. "trap d" checks the space below
+      String[] words = line.split("\\s+");
+      String command = words[0];
+      String dir = words.length > 1 ? words[1] : "";
 
       if (!isValidCommand(command, validCommands))
       {
         System.out.println("Invalid input. Please try again");
         score -= invalidVal;
+        System.out.println("score=" + score + " steps=" + game.getSteps());
         continue;
       }
 
@@ -119,10 +125,59 @@ public class EscapeRoom
       {
         score += game.pickupPrize();
       }
-      // spring the trap on the space the player is standing on
+      // spring a trap: with no direction, checks your own space; with a direction (trap d, trap u, ...)
+      // it checks the adjacent space instead, so you can clear a trap before ever stepping on it
       else if (command.equals("trap") || command.equals("t"))
       {
-        score += game.springTrap(0, 0);
+        int tx = 0;
+        int ty = 0;
+        if (dir.equals("right") || dir.equals("r"))
+        {
+          tx = m;
+        }
+        else if (dir.equals("left") || dir.equals("l"))
+        {
+          tx = -m;
+        }
+        else if (dir.equals("up") || dir.equals("u"))
+        {
+          ty = -m;
+        }
+        else if (dir.equals("down") || dir.equals("d"))
+        {
+          ty = m;
+        }
+        score += game.springTrap(tx, ty);
+      }
+      // look at all four adjacent spaces for traps; a wasted check with nothing nearby costs points
+      else if (command.equals("check") || command.equals("c"))
+      {
+        boolean found = false;
+        if (game.isTrap(m, 0))
+        {
+          System.out.println("trap to your right");
+          found = true;
+        }
+        if (game.isTrap(-m, 0))
+        {
+          System.out.println("trap to your left");
+          found = true;
+        }
+        if (game.isTrap(0, -m))
+        {
+          System.out.println("trap above you");
+          found = true;
+        }
+        if (game.isTrap(0, m))
+        {
+          System.out.println("trap below you");
+          found = true;
+        }
+        if (!found)
+        {
+          System.out.println("no traps in any direction");
+          score -= noTrapVal;
+        }
       }
       // reset the board; replay() itself returns the win/loss score for the run just finished
       else if (command.equals("replay"))
@@ -140,11 +195,22 @@ public class EscapeRoom
       }
 
       // only movement/jump commands set px or py, so this skips movePlayer for everything else
-      // movePlayer returns a penalty for hitting a wall or going off the grid
       if (px != 0 || py != 0)
       {
-        score += game.movePlayer(px, py);
+        // movePlayer returns a penalty for hitting a wall or going off the grid, -1 for a normal move
+        int moveResult = game.movePlayer(px, py);
+        score += moveResult;
+
+        // walking onto an unsprung trap springs it automatically, but costs points since you didn't check first
+        if (moveResult == -1 && game.isTrap(0, 0))
+        {
+          System.out.println("YOU STEPPED ON A TRAP!");
+          score -= game.springTrap(0, 0);
+        }
       }
+
+      // show the player where they stand after every command
+      System.out.println("score=" + score + " steps=" + game.getSteps());
     }
 
     // the game is over: check if the player reached the far right wall
@@ -174,7 +240,9 @@ public class EscapeRoom
     System.out.println("  right (r), left (l), up (u), down (d)  move one space");
     System.out.println("  jump (jr), jumpleft (jl), jumpup (ju), jumpdown (jd)  jump over one space");
     System.out.println("  pickup (p)  pick up a prize on your space");
+    System.out.println("  check (c)  look all four directions for a nearby trap; costs points if none are found");
     System.out.println("  trap (t)  spring a trap on your space");
+    System.out.println("  trap r/l/u/d  spring a trap one space over, before you step on it");
     System.out.println("  replay  reset the board and play again");
     System.out.println("  help (?)  show this list");
     System.out.println("  quit (q)  end the game");

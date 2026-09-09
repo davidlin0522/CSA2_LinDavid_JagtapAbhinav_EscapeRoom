@@ -51,6 +51,9 @@ public class GameGUI extends JComponent
   private Rectangle[] prizes;
   private int totalTraps;
   private Rectangle[] traps;
+  private boolean[] trapDiscovered; // true once a trap has been found via isTrap/springTrap
+  private Image trapImage;
+  private Image detrappedImage;
 
   // scores, sometimes awarded as (negative) penalties
   private int prizeVal = 10;
@@ -75,11 +78,21 @@ public class GameGUI extends JComponent
       System.err.println("Could not open file grid.png");
     }      
     try {
-      prizeImage = ImageIO.read(new File("coin.png"));      
+      prizeImage = ImageIO.read(new File("coin.png"));
     } catch (Exception e) {
       System.err.println("Could not open file coin.png");
     }
-  
+    try {
+      trapImage = ImageIO.read(new File("Trap.png"));
+    } catch (Exception e) {
+      System.err.println("Could not open file Trap.png");
+    }
+    try {
+      detrappedImage = ImageIO.read(new File("Detrapped Trap.png"));
+    } catch (Exception e) {
+      System.err.println("Could not open file Detrapped Trap.png");
+    }
+
     // player image, student can customize this image by changing file on disk
     try {
       player = ImageIO.read(new File("player.png"));      
@@ -112,7 +125,8 @@ public class GameGUI extends JComponent
   {
     traps = new Rectangle[totalTraps];
     createTraps();
-    
+    trapDiscovered = new boolean[totalTraps];
+
     prizes = new Rectangle[totalPrizes];
     createPrizes();
 
@@ -202,13 +216,14 @@ public class GameGUI extends JComponent
    */
   public boolean isTrap(int newx, int newy)
   {
-    double px = playerLoc.getX() + newx;
-    double py = playerLoc.getY() + newy;
+    // x/y update the instant the player moves; playerLoc only updates on the next repaint, so it can lag a step behind
+    double px = x + newx;
+    double py = y + newy;
 
 
-    for (Rectangle r: traps)
+    for (int i = 0; i < traps.length; i++)
     {
-      // DEBUG: System.out.println("trapx:" + r.getX() + " trapy:" + r.getY() + "\npx: " + px + " py:" + py);
+      Rectangle r = traps[i];
       // zero size traps have already been sprung, ignore
       if (r.getWidth() > 0)
       {
@@ -216,6 +231,7 @@ public class GameGUI extends JComponent
         if (r.contains(px, py))
         {
           System.out.println("A TRAP IS AHEAD");
+          trapDiscovered[i] = true; // now shown as Trap.png instead of staying invisible
           return true;
         }
       }
@@ -236,19 +252,20 @@ public class GameGUI extends JComponent
    */
   public int springTrap(int newx, int newy)
   {
-    double px = playerLoc.getX() + newx;
-    double py = playerLoc.getY() + newy;
+    double px = x + newx;
+    double py = y + newy;
 
     // check all traps, some of which may be already sprung
-    for (Rectangle r: traps)
+    for (int i = 0; i < traps.length; i++)
     {
-      // DEBUG: System.out.println("trapx:" + r.getX() + " trapy:" + r.getY() + "\npx: " + px + " py:" + py);
+      Rectangle r = traps[i];
       if (r.contains(px, py))
       {
         // zero size traps indicate it has been sprung, cannot spring again, so ignore
         if (r.getWidth() > 0)
         {
           r.setSize(0,0);
+          trapDiscovered[i] = true; // shown as Detrapped Trap.png from now on
           System.out.println("TRAP IS SPRUNG!");
           return trapVal;
         }
@@ -266,8 +283,8 @@ public class GameGUI extends JComponent
    */
   public int pickupPrize()
   {
-    double px = playerLoc.getX();
-    double py = playerLoc.getY();
+    double px = x;
+    double py = y;
 
     for (Rectangle p: prizes)
     {
@@ -342,11 +359,14 @@ public class GameGUI extends JComponent
 
     int win = playerAtEnd();
   
-    // resize prizes and traps to "reactivate" them
+    // resize prizes and traps to "reactivate" them, and hide traps again until rediscovered
     for (Rectangle p: prizes)
       p.setSize(SPACE_SIZE/3, SPACE_SIZE/3);
-    for (Rectangle t: traps)
-      t.setSize(SPACE_SIZE/3, SPACE_SIZE/3);
+    for (int i = 0; i < traps.length; i++)
+    {
+      traps[i].setSize(SPACE_SIZE/3, SPACE_SIZE/3);
+      trapDiscovered[i] = false;
+    }
 
     // move player to start of board
     x = START_LOC_X;
@@ -382,11 +402,26 @@ public class GameGUI extends JComponent
     // draw grid
     g.drawImage(bgImage, 0, 0, null);
 
-    // add (invisible) traps
-    for (Rectangle t : traps)
+    // traps stay invisible until discovered by check/trap; once sprung they show as detrapped
+    for (int i = 0; i < traps.length; i++)
     {
-      g2.setPaint(Color.WHITE); 
-      g2.fill(t);
+      Rectangle t = traps[i];
+      int tx = (int)t.getX();
+      int ty = (int)t.getY();
+
+      if (t.getWidth() == 0)
+      {
+        g.drawImage(detrappedImage, tx, ty, 15, 15, null);
+      }
+      else if (trapDiscovered[i])
+      {
+        g.drawImage(trapImage, tx, ty, 15, 15, null);
+      }
+      else
+      {
+        g2.setPaint(Color.WHITE);
+        g2.fill(t);
+      }
     }
 
     // add prizes
@@ -489,7 +524,7 @@ public class GameGUI extends JComponent
   {
     int score;
 
-    double px = playerLoc.getX();
+    double px = x;
     if (px > (WIDTH - 2*SPACE_SIZE))
     {
       System.out.println("YOU MADE IT!");
