@@ -60,7 +60,7 @@ public class EscapeRoom
     --------------------------------------------------------------------- \n
      """;
 
-
+    //Create Game
     GameGUI game = new GameGUI();
     game.createBoard();
 
@@ -71,11 +71,13 @@ public class EscapeRoom
     int py = 0;
 
     int score = 0;
+    int invalidVal = 5; // penalty for typing an unrecognized command
+    int noTrapVal = 5; // penalty for checking and finding nothing nearby
 
     Scanner in = new Scanner(System.in);
     String[] validCommands = { "right", "left", "up", "down", "r", "l", "u", "d",
     "jump", "jr", "jumpleft", "jl", "jumpup", "ju", "jumpdown", "jd",
-    "pickup", "p", "quit", "q", "replay", "help", "?"};
+    "pickup", "p", "trap", "t", "check", "c", "quit", "q", "replay", "help", "?"};
 
     // set up game
     boolean play = true;
@@ -100,8 +102,9 @@ public class EscapeRoom
       }else if (next_command.equalsIgnoreCase("replay")) {
         //create a new game instance
        game.replay();
+
       }else if (next_command.equals("help") || next_command.equals("?")) {
-        //create a new game instance
+        //prints out helpMessage
         System.out.println(helpMessage);
       }
       else{
@@ -111,6 +114,155 @@ public class EscapeRoom
       System.out.println("current score:" + score);
       System.out.println("current steps:" + game.getSteps());
     }
+  score += game.endGame();
+
+      System.out.print("Enter a command (help for a list)\n>");
+      String line = in.nextLine().trim().toLowerCase();
+      // "trap" can take a second word for direction, e.g. "trap d" checks the space below
+      String[] words = line.split("\\s+");
+      String command = words[0];
+      String dir = words.length > 1 ? words[1] : "";
+
+      if (!getValidInput(command, validCommands))
+      {
+        System.out.println("Invalid input. Please try again");
+        score -= invalidVal;
+        System.out.println("score=" + score + " steps=" + game.getSteps());
+        continue;
+      }
+
+      // px/py reset each turn since movePlayer() moves relative to where the player already is
+      px = 0;
+      py = 0;
+
+      // y grows going DOWN the screen, so up is negative
+      if (command.equals("right") || command.equals("r"))
+      {
+        px = m;
+      }
+      else if (command.equals("left") || command.equals("l"))
+      {
+        px = -m;
+      }
+      else if (command.equals("up") || command.equals("u"))
+      {
+        py = -m;
+      }
+      else if (command.equals("down") || command.equals("d"))
+      {
+        py = m;
+      }
+      // a jump clears one space, so it moves two spaces at once
+      else if (command.equals("jump") || command.equals("jr"))
+      {
+        px = 2 * m;
+      }
+      else if (command.equals("jumpleft") || command.equals("jl"))
+      {
+        px = -2 * m;
+      }
+      else if (command.equals("jumpup") || command.equals("ju"))
+      {
+        py = -2 * m;
+      }
+      else if (command.equals("jumpdown") || command.equals("jd"))
+      {
+        py = 2 * m;
+      }
+      // pick up the prize on the space the player is standing on
+      else if (command.equals("pickup") || command.equals("p"))
+      {
+        score += game.pickupPrize();
+      }
+      // spring a trap: with no direction, checks your own space; with a direction (trap d, trap u, ...)
+      // it checks the adjacent space instead, so you can clear a trap before ever stepping on it
+      else if (command.equals("trap") || command.equals("t"))
+      {
+        int tx = 0;
+        int ty = 0;
+        if (dir.equals("right") || dir.equals("r"))
+        {
+          tx = m;
+        }
+        else if (dir.equals("left") || dir.equals("l"))
+        {
+          tx = -m;
+        }
+        else if (dir.equals("up") || dir.equals("u"))
+        {
+          ty = -m;
+        }
+        else if (dir.equals("down") || dir.equals("d"))
+        {
+          ty = m;
+        }
+        score += game.springTrap(tx, ty);
+      }
+      // look at all four adjacent spaces for traps; a wasted check with nothing nearby costs points
+      else if (command.equals("check") || command.equals("c"))
+      {
+        boolean found = false;
+        if (game.isTrap(m, 0))
+        {
+          System.out.println("trap to your right");
+          found = true;
+        }
+        if (game.isTrap(-m, 0))
+        {
+          System.out.println("trap to your left");
+          found = true;
+        }
+        if (game.isTrap(0, -m))
+        {
+          System.out.println("trap above you");
+          found = true;
+        }
+        if (game.isTrap(0, m))
+        {
+          System.out.println("trap below you");
+          found = true;
+        }
+        if (!found)
+        {
+          System.out.println("no traps in any direction");
+          score -= noTrapVal;
+        }
+      }
+      // reset the board; replay() itself returns the win/loss score for the run just finished
+      else if (command.equals("replay"))
+      {
+        System.out.println("steps=" + game.getSteps());
+        score += game.replay();
+      }
+      else if (command.equals("help") || command.equals("?"))
+      {
+        System.out.println(helpMessage);
+      }
+      else if (command.equals("quit") || command.equals("q"))
+      {
+        play = false;
+      }
+
+      // only movement/jump commands set px or py, so this skips movePlayer for everything else
+      if (px != 0 || py != 0)
+      {
+        // movePlayer returns a penalty for hitting a wall or going off the grid, -1 for a normal move
+        int moveResult = game.movePlayer(px, py);
+        score += moveResult;
+
+        // walking onto an unsprung trap springs it automatically, but costs points since you didn't check first
+        if (moveResult == -1 && game.isTrap(0, 0))
+        {
+          System.out.println("YOU STEPPED ON A TRAP!");
+          score -= game.springTrap(0, 0);
+        }
+      }
+
+      // show the player where they stand after every command
+      System.out.println("score=" + score + " steps=" + game.getSteps());
+    }
+
+    // the game is over: check if the player reached the far right wall
   score += game.endGame();
 
   System.out.println("score=" + score);
