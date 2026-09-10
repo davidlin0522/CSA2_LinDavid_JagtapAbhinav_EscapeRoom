@@ -114,7 +114,7 @@ public class GameGUI extends JComponent
     // set default config
     totalWalls = 20;
     totalPrizes = 3;
-    totalTraps = 40;
+    totalTraps = 5;
   }
 
  /**

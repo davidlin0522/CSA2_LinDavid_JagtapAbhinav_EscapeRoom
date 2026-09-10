@@ -83,12 +83,13 @@ public class EscapeRoom
           }
       } else if (next_command.equalsIgnoreCase("spring") || next_command.equalsIgnoreCase("s")) {
           score += game.springTrap(0,0,false); 
+      }
       if (game.isTrap(0,0,true)){ //Checks if current spot is true; if true then you have to lose points
         score += game.springTrap(0, 0, true); // calls with trapped = true as parameter; making you lose points when on a trap.       }
         System.out.println("UH OH YOU JUST STEPPED ON A TRAP!");
       }
         System.out.println("current score:" + score);
-        System.out.println("current steps:" + game.getSteps());
+      System.out.println("current steps:" + game.getSteps());
     }
     score += game.endGame();
   System.out.println("Final score=" + score);
