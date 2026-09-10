@@ -47,12 +47,9 @@ public class EscapeRoom
     
     GameGUI game = new GameGUI();
     game.createBoard();
-
     // size of move
     int m = 60;
     int score = 0;
-    int[][] adjacentTiles = { {m, 0}, {-m, 0}, {0, -m}, {0, m} };  // Gets ajacent tiles
-
     Scanner in = new Scanner(System.in);
   
     // set up game
@@ -74,41 +71,26 @@ public class EscapeRoom
        score +=  game.pickupPrize();
       }else if (next_command.equalsIgnoreCase("replay")) {
         //create a new game instance
+        score = 0;
+        System.out.println("\n\n\n RESET GAME, RESET SCORE, RESET STEPS");
        game.replay();
-
       } else if (next_command.equals("check") || next_command.equals("c")) {
-        boolean foundTrap = false;
-        //sets foundTrap variable to false, initially
-
-        for (int[] tile : adjacentTiles) { //for loop; checks every tile next to plyer
-          if (game.isTrap(tile[0], tile[1])) { //Checks every tile around the player
-            foundTrap = true;  // If there is a trap there, returns true
+          if (game.isTrap(0,0,false)) { //Checks player current tile
             System.out.println("Trap detected next to you");
           } else {
             System.out.println( "No traps detected next to you.");
+            score -= 1;
           }
-        }
-
       } else if (next_command.equalsIgnoreCase("spring") || next_command.equalsIgnoreCase("s")) {
-        boolean sprungTrap = false;
-
-        for (int[] tile : adjacentTiles) {
-          if (game.isTrap(tile[0], tile[1])) { //checks all tiles around the player
-            score += game.springTrap(tile[0], tile[1]);
-            sprungTrap = true;
-          }
-        }
-
-        if (!sprungTrap) {
-          System.out.println("No traps next to you. Penalty applied.");
-          score -= 5;
-        }
+          score += game.springTrap(0,0,false); 
+      if (game.isTrap(0,0,true)){ //Checks if current spot is true; if true then you have to lose points
+        score += game.springTrap(0, 0, true); // calls with trapped = true as parameter; making you lose points when on a trap.       }
+        System.out.println("UH OH YOU JUST STEPPED ON A TRAP!");
       }
-      System.out.println("current score:" + score);
-      System.out.println("current steps:" + game.getSteps());
+        System.out.println("current score:" + score);
+        System.out.println("current steps:" + game.getSteps());
     }
-  score += game.endGame();
-
-  System.out.println("score=" + score);
-  System.out.println("steps=" + game.getSteps());
-  }}
+    score += game.endGame();
+  System.out.println("Final score=" + score);
+  System.out.println("Final steps=" + game.getSteps());
+}}

@@ -114,7 +114,7 @@ public class GameGUI extends JComponent
     // set default config
     totalWalls = 20;
     totalPrizes = 3;
-    totalTraps = 5;
+    totalTraps = 40;
   }
 
  /**
@@ -214,7 +214,7 @@ public class GameGUI extends JComponent
    * @param newy a location indicating the space above or below the player
    * @return true if the new location has a trap that has not been sprung, false otherwise
    */
-  public boolean isTrap(int newx, int newy)
+  public boolean isTrap(int newx, int newy, boolean trapped) //Create trapped bool, that runs different code if the player didnt spring the trap
   {
     // x/y update the instant the player moves; playerLoc only updates on the next repaint, so it can lag a step behind
     double px = x + newx;
@@ -230,7 +230,9 @@ public class GameGUI extends JComponent
         // if new location of player has a trap, return true
         if (r.contains(px, py))
         {
-          System.out.println("A TRAP IS AHEAD");
+          if (!trapped){
+            System.out.println("A TRAP IS AHEAD");
+          }
           trapDiscovered[i] = true; // now shown as Trap.png instead of staying invisible
           return true;
         }
@@ -250,7 +252,7 @@ public class GameGUI extends JComponent
    * @param newy a location indicating the space above or below the player
    * @return a positive score if a trap is sprung, otherwise a negative penalty for trying to spring a non-existent trap
    */
-  public int springTrap(int newx, int newy)
+  public int springTrap(int newx, int newy, boolean trapped)
   {
     double px = x + newx;
     double py = y + newy;
@@ -259,15 +261,21 @@ public class GameGUI extends JComponent
     for (int i = 0; i < traps.length; i++)
     {
       Rectangle r = traps[i];
+      
       if (r.contains(px, py))
       {
         // zero size traps indicate it has been sprung, cannot spring again, so ignore
+        
         if (r.getWidth() > 0)
         {
           r.setSize(0,0);
           trapDiscovered[i] = true; // shown as Detrapped Trap.png from now on
-          System.out.println("TRAP IS SPRUNG!");
-          return trapVal;
+          if (trapped){
+            return -trapVal;
+          }else {
+            System.out.println("TRAP IS SPRUNG!");
+            return trapVal;
+          }
         }
       }
     }
