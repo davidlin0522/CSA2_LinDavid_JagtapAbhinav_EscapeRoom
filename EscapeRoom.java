@@ -34,6 +34,7 @@ public class EscapeRoom
     System.out.println("Welcome to EscapeRoom!");
     System.out.println("Get to the other side of the room, avoiding walls and invisible traps,");
     System.out.println("pick up all the prizes.\n");
+<<<<<<< HEAD
 
     String helpMessage = """
     --------------------------------------------------------------------- \n
@@ -53,23 +54,18 @@ public class EscapeRoom
     --------------------------------------------------------------------- \n
      """;
 
+=======
+    
+>>>>>>> dce152b2716aa444e6510306183fc8a05e4316fb
     GameGUI game = new GameGUI();
     game.createBoard();
-
     // size of move
     int m = 60;
-    // individual player moves
-    int px = 0;
-    int py = 0;
-
     int score = 0;
-    int invalidVal = 5; // penalty for typing an unrecognized command
-    int noTrapVal = 5; // penalty for checking and finding nothing nearby
-
     Scanner in = new Scanner(System.in);
     String[] validCommands = { "right", "left", "up", "down", "r", "l", "u", "d",
     "jump", "jr", "jumpleft", "jl", "jumpup", "ju", "jumpdown", "jd",
-    "pickup", "p", "trap", "t", "check", "c", "quit", "q", "replay", "help", "?"};
+    "pickup", "p", "quit", "q", "replay", "help", "?"};
 
     // set up game
     boolean play = true;
