@@ -34,7 +34,6 @@ public class EscapeRoom
     System.out.println("Welcome to EscapeRoom!");
     System.out.println("Get to the other side of the room, avoiding walls and invisible traps,");
     System.out.println("pick up all the prizes.\n");
-<<<<<<< HEAD
 
     String helpMessage = """
     --------------------------------------------------------------------- \n
@@ -54,18 +53,23 @@ public class EscapeRoom
     --------------------------------------------------------------------- \n
      """;
 
-=======
-    
->>>>>>> dce152b2716aa444e6510306183fc8a05e4316fb
     GameGUI game = new GameGUI();
     game.createBoard();
+
     // size of move
     int m = 60;
+    // individual player moves
+    int px = 0;
+    int py = 0;
+
     int score = 0;
+    int invalidVal = 5; // penalty for typing an unrecognized command
+    int noTrapVal = 5; // penalty for checking and finding nothing nearby
+
     Scanner in = new Scanner(System.in);
     String[] validCommands = { "right", "left", "up", "down", "r", "l", "u", "d",
     "jump", "jr", "jumpleft", "jl", "jumpup", "ju", "jumpdown", "jd",
-    "pickup", "p", "quit", "q", "replay", "help", "?"};
+    "pickup", "p", "trap", "t", "check", "c", "quit", "q", "replay", "help", "?"};
 
     // set up game
     boolean play = true;
@@ -130,7 +134,8 @@ public class EscapeRoom
         score += game.pickupPrize();
       }
       // spring a trap: with no direction, checks your own space; with a direction (trap d, trap u, ...)
-      // it checks the adjacent space instead, so you can clear a trap before ever stepping on it
+      // it checks the adjacent space instead, so you can clear a trap before ever stepping on it.
+      // trapped=false here since this is a deliberate, informed spring, so a hit pays out normally
       else if (command.equals("trap") || command.equals("t"))
       {
         int tx = 0;
@@ -151,28 +156,28 @@ public class EscapeRoom
         {
           ty = m;
         }
-        score += game.springTrap(tx, ty);
+        score += game.springTrap(tx, ty, false);
       }
       // look at all four adjacent spaces for traps; a wasted check with nothing nearby costs points
       else if (command.equals("check") || command.equals("c"))
       {
         boolean found = false;
-        if (game.isTrap(m, 0))
+        if (game.isTrap(m, 0, false))
         {
           System.out.println("trap to your right");
           found = true;
         }
-        if (game.isTrap(-m, 0))
+        if (game.isTrap(-m, 0, false))
         {
           System.out.println("trap to your left");
           found = true;
         }
-        if (game.isTrap(0, -m))
+        if (game.isTrap(0, -m, false))
         {
           System.out.println("trap above you");
           found = true;
         }
-        if (game.isTrap(0, m))
+        if (game.isTrap(0, m, false))
         {
           System.out.println("trap below you");
           found = true;
@@ -205,11 +210,12 @@ public class EscapeRoom
         int moveResult = game.movePlayer(px, py);
         score += moveResult;
 
-        // walking onto an unsprung trap springs it automatically, but costs points since you didn't check first
-        if (moveResult == -1 && game.isTrap(0, 0))
+        // walking onto an unsprung trap springs it automatically; trapped=true keeps it silent on the
+        // "ahead" warning and makes springTrap pay out a penalty instead of a reward for the surprise
+        if (moveResult == -1 && game.isTrap(0, 0, true))
         {
           System.out.println("YOU STEPPED ON A TRAP!");
-          score -= game.springTrap(0, 0);
+          score += game.springTrap(0, 0, true);
         }
       }
 
