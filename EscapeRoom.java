@@ -51,7 +51,10 @@ public class EscapeRoom
     int m = 60;
     int score = 0;
     Scanner in = new Scanner(System.in);
-  
+    String[] validCommands = { "right", "left", "up", "down", "r", "l", "u", "d",
+    "jump", "jr", "jumpleft", "jl", "jumpup", "ju", "jumpdown", "jd",
+    "pickup", "p", "quit", "q", "replay", "help", "?"};
+
     // set up game
     boolean play = true;
     while (play)
@@ -59,7 +62,15 @@ public class EscapeRoom
       String next_command = in.nextLine();
       if (next_command.equalsIgnoreCase("quit") || next_command.equalsIgnoreCase("q")) {
         play = false;
-      } else if (next_command.equalsIgnoreCase("right") || next_command.equalsIgnoreCase("r")) {
+      } else if (next_command.equalsIgnoreCase("jump") || next_command.equalsIgnoreCase("jr")) {
+        score += game.movePlayer(m*2, 0);
+      } else if (next_command.equalsIgnoreCase("jumpleft") || next_command.equalsIgnoreCase("jl")) {
+        score += game.movePlayer(-m*2, 0);
+      } else if (next_command.equalsIgnoreCase("jumpup") || next_command.equalsIgnoreCase("ju")) {
+        score += game.movePlayer(0, -2*m);
+      }else if (next_command.equalsIgnoreCase("jumpdown") || next_command.equalsIgnoreCase("jd")) {
+        score += game.movePlayer(0, 2*m);
+      }else if (next_command.equalsIgnoreCase("right") || next_command.equalsIgnoreCase("r")) {
         score += game.movePlayer(m, 0);
       } else if (next_command.equalsIgnoreCase("left") || next_command.equalsIgnoreCase("l")) {
         score += game.movePlayer(-m, 0);
