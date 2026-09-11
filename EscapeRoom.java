@@ -167,7 +167,7 @@ public class EscapeRoom
       // spring the trap under the player and free them from being stuck
       else if (command.equals("detrap"))
       {
-        score += game.springTrap(0, 0, false);
+        score += game.springTrap(0, 0, false)-2;
         trapped = false;
       }
       // look at all four adjacent spaces for traps; a wasted check with nothing nearby costs points
