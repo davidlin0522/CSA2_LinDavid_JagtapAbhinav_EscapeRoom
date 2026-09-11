@@ -93,11 +93,11 @@ public class EscapeRoom
         continue;
       }
 
-      // px/py reset each turn since movePlayer() moves relative to where the player already is
+      // px/py reflects changes in player position
       px = 0;
       py = 0;
 
-      // y grows going DOWN the screen, so up is negative
+      // y grows going down the screen, so up is negative
       if (command.equals("right") || command.equals("r"))
       {
         px = m;
@@ -114,7 +114,7 @@ public class EscapeRoom
       {
         py = m;
       }
-      // a jump clears one space, so it moves two spaces at once
+      // a jump travels one space, so it moves two spaces at once
       else if (command.equals("jump") || command.equals("jr"))
       {
         px = 2 * m;
@@ -138,7 +138,6 @@ public class EscapeRoom
       }
       // spring a trap: with no direction, checks your own space; with a direction (trap d, trap u, ...)
       // it checks the adjacent space instead, so you can clear a trap before ever stepping on it.
-      // trapped=false here since this is a deliberate, informed spring, so a hit pays out normally
       else if (command.equals("trap") || command.equals("t"))
       {
         int tx = 0;
