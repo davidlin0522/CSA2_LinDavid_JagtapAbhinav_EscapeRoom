@@ -48,6 +48,7 @@ public class EscapeRoom
     Input \'pickup\' or \'p\' to pickup items \n
     Input \'trap\' or \'t\', optionally followed by r/l/u/d, to spring a trap \n
     Input \'check\' or \'c\' to look for a trap in all four directions \n
+    Input \'detrap\' to free yourself if you're stuck on a trap \n
     Input \'quit\' or \'q\' to quit the game \n
     Input \'help\' or \'?\' to print this message again! \n
     --------------------------------------------------------------------- \n
@@ -65,11 +66,13 @@ public class EscapeRoom
     int score = 0;
     int invalidVal = 5; // penalty for typing an unrecognized command
     int noTrapVal = 5; // penalty for checking and finding nothing nearby
+    int steppedVal = 5; // penalty for landing on a trap that hasn't been detrapped yet
+    boolean trapped = false; // true once the player lands on an unsprung trap; blocks movement until detrapped
 
     Scanner in = new Scanner(System.in);
     String[] validCommands = { "right", "left", "up", "down", "r", "l", "u", "d",
     "jump", "jr", "jumpleft", "jl", "jumpup", "ju", "jumpdown", "jd",
-    "pickup", "p", "trap", "t", "check", "c", "quit", "q", "replay", "help", "?"};
+    "pickup", "p", "trap", "t", "check", "c", "detrap", "quit", "q", "replay", "help", "?"};
 
     // set up game
     boolean play = true;
@@ -157,6 +160,16 @@ public class EscapeRoom
           ty = m;
         }
         score += game.springTrap(tx, ty, false);
+        if (tx == 0 && ty == 0)
+        {
+          trapped = false; // springing your own space frees you if you were stuck
+        }
+      }
+      // spring the trap under the player and free them from being stuck
+      else if (command.equals("detrap"))
+      {
+        score += game.springTrap(0, 0, false);
+        trapped = false;
       }
       // look at all four adjacent spaces for traps; a wasted check with nothing nearby costs points
       else if (command.equals("check") || command.equals("c"))
@@ -193,6 +206,7 @@ public class EscapeRoom
       {
         System.out.println("steps=" + game.getSteps());
         score += game.replay();
+        trapped = false; // fresh board, fresh start
       }
       else if (command.equals("help") || command.equals("?"))
       {
@@ -206,16 +220,26 @@ public class EscapeRoom
       // only movement/jump commands set px or py, so this skips movePlayer for everything else
       if (px != 0 || py != 0)
       {
-        // movePlayer returns a penalty for hitting a wall or going off the grid, -1 for a normal move
-        int moveResult = game.movePlayer(px, py);
-        score += moveResult;
-
-        // walking onto an unsprung trap springs it automatically; trapped=true keeps it silent on the
-        // "ahead" warning and makes springTrap pay out a penalty instead of a reward for the surprise
-        if (moveResult == -1 && game.isTrap(0, 0, true))
+        if (trapped)
         {
-          System.out.println("YOU STEPPED ON A TRAP!");
-          score += game.springTrap(0, 0, true);
+          System.out.println("You're stuck in a trap! Type 'detrap' to free yourself.");
+        }
+        else
+        {
+          // movePlayer returns a penalty for hitting a wall or going off the grid, -1 for a normal move
+          int moveResult = game.movePlayer(px, py);
+          score += moveResult;
+
+          // landing on an unsprung trap reveals it (isTrap marks it discovered) and costs points, but
+          // does NOT spring it -- the player is stuck here until they type "detrap" to spring it and
+          // move again, so stepping on the same undetrapped square later still costs points too
+          if (moveResult == -1 && game.isTrap(0, 0, true))
+          {
+            System.out.println("YOU STEPPED ON A TRAP!");
+            game.animateTrapHit();
+            score -= steppedVal;
+            trapped = true;
+          }
         }
       }
 

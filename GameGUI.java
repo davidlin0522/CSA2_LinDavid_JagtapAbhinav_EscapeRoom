@@ -200,12 +200,39 @@ public class GameGUI extends JComponent
       // all is well, move player
       x += incrx;
       y += incry;
-      repaint();   
-      return -1;   
+      repaint();
+      return -1;
   }
 
   /**
-   * Check the space adjacent to the player for a trap. The adjacent location is one space away from the player, 
+   * Bounce the player up and down twice in place, used when the player lands on an unsprung trap.
+   * Uses paintImmediately() instead of repaint() so each bounce frame actually draws before the next one,
+   * since repaint() only schedules a paint and would otherwise skip straight to the final frame.
+   */
+  public void animateTrapHit()
+  {
+    int groundY = y;
+    int bounceHeight = 15;
+    try
+    {
+      for (int bounce = 0; bounce < 2; bounce++)
+      {
+        y = groundY - bounceHeight;
+        paintImmediately(getBounds());
+        Thread.sleep(120);
+        y = groundY;
+        paintImmediately(getBounds());
+        Thread.sleep(120);
+      }
+    }
+    catch (InterruptedException e)
+    {
+      y = groundY;
+    }
+  }
+
+  /**
+   * Check the space adjacent to the player for a trap. The adjacent location is one space away from the player,
    * designated by newx, newy.
    * <P>
    * precondition: newx and newy must be the amount a player regularly moves, otherwise an existing trap may go undetected
@@ -410,20 +437,22 @@ public class GameGUI extends JComponent
     // draw grid
     g.drawImage(bgImage, 0, 0, null);
 
-    // traps stay invisible until discovered by check/trap; once sprung they show as detrapped
+    // undiscovered traps stay invisible; discovered ones show Trap.png, sprung ones show Detrapped Trap.png.
+    // the trap rectangle itself is only 15x15 (for hit detection), offset 15px into its grid cell,
+    // so subtracting that offset and drawing 60x60 fills the whole cell instead of just a corner of it
     for (int i = 0; i < traps.length; i++)
     {
       Rectangle t = traps[i];
-      int tx = (int)t.getX();
-      int ty = (int)t.getY();
+      int cellX = (int)t.getX() - 15;
+      int cellY = (int)t.getY() - 15;
 
       if (t.getWidth() == 0)
       {
-        g.drawImage(detrappedImage, tx, ty, 15, 15, null);
+        g.drawImage(detrappedImage, cellX, cellY, SPACE_SIZE, SPACE_SIZE, null);
       }
       else if (trapDiscovered[i])
       {
-        g.drawImage(trapImage, tx, ty, 15, 15, null);
+        g.drawImage(trapImage, cellX, cellY, SPACE_SIZE, SPACE_SIZE, null);
       }
       else
       {
